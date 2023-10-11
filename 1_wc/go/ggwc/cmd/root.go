@@ -62,9 +62,17 @@ func WordsInFile(fileName string) int {
 	return count
 }
 
+func CharsInFile(fileName string) int {
+  // f, err := os.Open(fileName)
+  // check(err)
+  // defer f.Close()
+
+  return 0
+}
+
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
-	Use: "ggwc -l <file>",
+	Use: "ggwc <file>",
 	// Uncomment the following line if your bare application
 	// has an action associated with it:
 	Run: func(cmd *cobra.Command, args []string) {
@@ -88,7 +96,7 @@ var rootCmd = &cobra.Command{
 				file_bytes := BytesInFile(file)
 				file_lines := LinesInFile(file)
 				file_words := WordsInFile(file)
-				fmt.Println(file_lines, file_bytes, file_words, file)
+				fmt.Println(file_lines, file_words, file_bytes, file)
 			}
 		}
 	},
