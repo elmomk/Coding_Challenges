@@ -51,7 +51,6 @@ func WordsInFile(fileName string) int {
 	scanner := bufio.NewScanner(f)
 	scanner.Split(bufio.ScanWords)
 
-	// getting the number of lines
 	var count int
 	for scanner.Scan() {
 		count++
@@ -63,11 +62,21 @@ func WordsInFile(fileName string) int {
 }
 
 func CharsInFile(fileName string) int {
-  // f, err := os.Open(fileName)
-  // check(err)
-  // defer f.Close()
+	f, err := os.Open(fileName)
+	check(err)
+	defer f.Close()
 
-  return 0
+	scanner := bufio.NewScanner(f)
+	scanner.Split(bufio.ScanRunes)
+
+	var count int
+	for scanner.Scan() {
+		count++
+	}
+	if err := scanner.Err(); err != nil {
+		log.Panicln(err)
+	}
+	return count
 }
 
 // rootCmd represents the base command when called without any subcommands
@@ -82,6 +91,8 @@ var rootCmd = &cobra.Command{
 		check(err)
 		w, err := cmd.Flags().GetBool("words")
 		check(err)
+		c, err := cmd.Flags().GetBool("chars")
+		check(err)
 		for _, file := range args {
 			if b {
 				file_bytes := BytesInFile(file)
@@ -92,6 +103,9 @@ var rootCmd = &cobra.Command{
 			} else if w {
 				file_words := WordsInFile(file)
 				fmt.Println(file_words, file)
+			} else if c {
+				file_chars := CharsInFile(file)
+				fmt.Println(file_chars, file)
 			} else {
 				file_bytes := BytesInFile(file)
 				file_lines := LinesInFile(file)
@@ -123,4 +137,5 @@ func init() {
 	rootCmd.Flags().BoolP("bytes", "c", false, "Show how many bytes are in a file")
 	rootCmd.Flags().BoolP("lines", "l", false, "Show how many lines are in a file")
 	rootCmd.Flags().BoolP("words", "w", false, "Show how many words are in a file")
+	rootCmd.Flags().BoolP("chars", "m", false, "Show how many characters are in a file")
 }
