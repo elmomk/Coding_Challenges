@@ -54,15 +54,19 @@ var rootCmd = &cobra.Command{
 		check(err)
 		l, err := cmd.Flags().GetBool("lines")
 		check(err)
-		file := args[0]
+    for _, file := range args {
 		if b {
       file_bytes := BytesInFile(file)
 			fmt.Println(file_bytes, file)
-		}
-		if l {
+		} else if l {
 			file_lines := LinesInFile(file)
 			fmt.Println(file_lines, file)
-		}
+		} else {
+      file_bytes := BytesInFile(file)
+			file_lines := LinesInFile(file)
+			fmt.Println(file_lines,file_bytes, file)
+    }
+    }
 	},
 }
 
