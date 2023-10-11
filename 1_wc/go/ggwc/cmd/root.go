@@ -40,6 +40,10 @@ func BytesInFile(fileName string) int64 {
 	return fileinfo.Size()
 }
 
+func WordsInFile(fileName string) int {
+  return 0
+}
+
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
 	Use: "ggwc -l <file>",
