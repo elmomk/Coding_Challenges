@@ -34,6 +34,12 @@ func LinesInFile(fileName string) int {
 	return len(result)
 }
 
+func BytesInFile(fileName string) int64 {
+	fileinfo, err := os.Stat(fileName)
+	check(err)
+	return fileinfo.Size()
+}
+
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
 	Use: "ggwc -l <file>",
@@ -46,13 +52,12 @@ var rootCmd = &cobra.Command{
 		check(err)
 		file := args[0]
 		if b {
-			fileinfo, err := os.Stat(file)
-			check(err)
-			fmt.Println(fileinfo.Size(), file)
+      file_bytes := BytesInFile(file)
+			fmt.Println(file_bytes, file)
 		}
 		if l {
-			lines := LinesInFile(file)
-			fmt.Println(lines, file)
+			file_lines := LinesInFile(file)
+			fmt.Println(file_lines, file)
 		}
 	},
 }
