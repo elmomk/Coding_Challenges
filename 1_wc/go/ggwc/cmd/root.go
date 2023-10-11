@@ -6,6 +6,7 @@ package cmd
 import (
 	"bufio"
 	"fmt"
+	"log"
 	"os"
 
 	"github.com/spf13/cobra"
@@ -18,20 +19,22 @@ func check(e error) {
 }
 
 func LinesInFile(fileName string) int {
-	f, _ := os.Open(fileName)
-	// Create new Scanner.
+	f, err := os.Open(fileName)
+	check(err)
+	defer f.Close()
+
 	scanner := bufio.NewScanner(f)
-	result := []string{}
-	// Use Scan.
+	scanner.Split(bufio.ScanLines)
+
+	// getting the number of lines
+	var count int
 	for scanner.Scan() {
-		line := scanner.Text()
-		// Append line to result.
-		result = append(result, line)
+		count++
 	}
-	// for index, lines := range result {
-	// fmt.Println(index, lines)
-	// }
-	return len(result)
+	if err := scanner.Err(); err != nil {
+		log.Panicln(err)
+	}
+	return count
 }
 
 func BytesInFile(fileName string) int64 {
@@ -41,7 +44,22 @@ func BytesInFile(fileName string) int64 {
 }
 
 func WordsInFile(fileName string) int {
-  return 0
+	f, err := os.Open(fileName)
+	check(err)
+	defer f.Close()
+
+	scanner := bufio.NewScanner(f)
+	scanner.Split(bufio.ScanWords)
+
+	// getting the number of lines
+	var count int
+	for scanner.Scan() {
+		count++
+	}
+	if err := scanner.Err(); err != nil {
+		log.Panicln(err)
+	}
+	return count
 }
 
 // rootCmd represents the base command when called without any subcommands
@@ -54,19 +72,25 @@ var rootCmd = &cobra.Command{
 		check(err)
 		l, err := cmd.Flags().GetBool("lines")
 		check(err)
-    for _, file := range args {
-		if b {
-      file_bytes := BytesInFile(file)
-			fmt.Println(file_bytes, file)
-		} else if l {
-			file_lines := LinesInFile(file)
-			fmt.Println(file_lines, file)
-		} else {
-      file_bytes := BytesInFile(file)
-			file_lines := LinesInFile(file)
-			fmt.Println(file_lines,file_bytes, file)
-    }
-    }
+		w, err := cmd.Flags().GetBool("words")
+		check(err)
+		for _, file := range args {
+			if b {
+				file_bytes := BytesInFile(file)
+				fmt.Println(file_bytes, file)
+			} else if l {
+				file_lines := LinesInFile(file)
+				fmt.Println(file_lines, file)
+			} else if w {
+				file_words := WordsInFile(file)
+				fmt.Println(file_words, file)
+			} else {
+				file_bytes := BytesInFile(file)
+				file_lines := LinesInFile(file)
+				file_words := WordsInFile(file)
+				fmt.Println(file_lines, file_bytes, file_words, file)
+			}
+		}
 	},
 }
 
@@ -90,4 +114,5 @@ func init() {
 	// when this action is called directly.
 	rootCmd.Flags().BoolP("bytes", "c", false, "Show how many bytes are in a file")
 	rootCmd.Flags().BoolP("lines", "l", false, "Show how many lines are in a file")
+	rootCmd.Flags().BoolP("words", "w", false, "Show how many words are in a file")
 }
