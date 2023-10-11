@@ -1,30 +1,60 @@
 /*
 Copyright © 2023 NAME HERE <EMAIL ADDRESS>
-
 */
 package cmd
 
 import (
+	"bufio"
+	"fmt"
 	"os"
 
 	"github.com/spf13/cobra"
 )
 
+func check(e error) {
+	if e != nil {
+		panic(e)
+	}
+}
 
+func LinesInFile(fileName string) int {
+	f, _ := os.Open(fileName)
+	// Create new Scanner.
+	scanner := bufio.NewScanner(f)
+	result := []string{}
+	// Use Scan.
+	for scanner.Scan() {
+		line := scanner.Text()
+		// Append line to result.
+		result = append(result, line)
+	}
+	// for index, lines := range result {
+	// fmt.Println(index, lines)
+	// }
+	return len(result)
+}
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
-	Use:   "go",
-	Short: "A brief description of your application",
-	Long: `A longer description that spans multiple lines and likely contains
-examples and usage of using your application. For example:
-
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+	Use: "ggwc -l <file>",
 	// Uncomment the following line if your bare application
 	// has an action associated with it:
-	// Run: func(cmd *cobra.Command, args []string) { },
+	Run: func(cmd *cobra.Command, args []string) {
+		b, err := cmd.Flags().GetBool("bytes")
+		check(err)
+		l, err := cmd.Flags().GetBool("lines")
+		check(err)
+		file := args[0]
+		if b {
+			fileinfo, err := os.Stat(file)
+			check(err)
+			fmt.Println(fileinfo.Size(), file)
+		}
+		if l {
+			lines := LinesInFile(file)
+			fmt.Println(lines, file)
+		}
+	},
 }
 
 // Execute adds all child commands to the root command and sets flags appropriately.
@@ -45,7 +75,6 @@ func init() {
 
 	// Cobra also supports local flags, which will only run
 	// when this action is called directly.
-	rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	rootCmd.Flags().BoolP("bytes", "c", false, "Show how many bytes are in a file")
+	rootCmd.Flags().BoolP("lines", "l", false, "Show how many lines are in a file")
 }
-
-
