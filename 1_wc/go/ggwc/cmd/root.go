@@ -1,6 +1,3 @@
-/*
-Copyright © 2023 NAME HERE <EMAIL ADDRESS>
-*/
 package cmd
 
 import (
@@ -12,62 +9,18 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func check(e error) {
+func Check(e error) {
 	if e != nil {
 		panic(e)
 	}
 }
 
-func LinesInFile(fileName string) int {
-	f, err := os.Open(fileName)
-	check(err)
-	defer f.Close()
-
-	scanner := bufio.NewScanner(f)
-	scanner.Split(bufio.ScanLines)
-
-	// getting the number of lines
-	var count int
-	for scanner.Scan() {
-		count++
-	}
-	if err := scanner.Err(); err != nil {
-		log.Panicln(err)
-	}
-	return count
-}
-
-func BytesInFile(fileName string) int64 {
-	fileinfo, err := os.Stat(fileName)
-	check(err)
-	return fileinfo.Size()
-}
-
-func WordsInFile(fileName string) int {
-	f, err := os.Open(fileName)
-	check(err)
-	defer f.Close()
-
-	scanner := bufio.NewScanner(f)
-	scanner.Split(bufio.ScanWords)
-
-	var count int
-	for scanner.Scan() {
-		count++
-	}
-	if err := scanner.Err(); err != nil {
-		log.Panicln(err)
-	}
-	return count
-}
-
-func CharsInFile(fileName string) int {
-	f, err := os.Open(fileName)
-	check(err)
-	defer f.Close()
-
-	scanner := bufio.NewScanner(f)
-	scanner.Split(bufio.ScanRunes)
+// CountItemsInFile counts the number of items (lines, bytes, words, or characters) in a file based on the given split type.
+func CountItemsInFile(file *bufio.Reader, splitType bufio.SplitFunc) int {
+	scanner := bufio.NewScanner(file)
+// func CountItemsInFile(scanner *bufio.Scanner, splitType bufio.SplitFunc) int {
+//   fmt.Print(scanner)
+	scanner.Split(splitType)
 
 	var count int
 	for scanner.Scan() {
@@ -82,34 +35,71 @@ func CharsInFile(fileName string) int {
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
 	Use: "ggwc <file>",
-	// Uncomment the following line if your bare application
-	// has an action associated with it:
 	Run: func(cmd *cobra.Command, args []string) {
 		b, err := cmd.Flags().GetBool("bytes")
-		check(err)
+		Check(err)
 		l, err := cmd.Flags().GetBool("lines")
-		check(err)
+		Check(err)
 		w, err := cmd.Flags().GetBool("words")
-		check(err)
+		Check(err)
 		c, err := cmd.Flags().GetBool("chars")
-		check(err)
+		Check(err)
+
+		fi, err := os.Stdin.Stat()
+		Check(err)
+
+		if fi.Mode()&os.ModeNamedPipe != 0 {
+      fileopen := bufio.NewReader(os.Stdin)
+			// filebuf := bufio.NewReader(os.Stdin)
+      // fileopen := bufio.NewScanner(filebuf)
+			if w {
+				file_words := CountItemsInFile(fileopen, bufio.ScanWords)
+				fmt.Println(file_words)
+			} else if c {
+				file_chars := CountItemsInFile(fileopen, bufio.ScanRunes)
+				fmt.Println(file_chars)
+			} else if l {
+				file_lines := CountItemsInFile(fileopen, bufio.ScanLines)
+				fmt.Println(file_lines)
+			} else if b {
+				file_bytes := CountItemsInFile(fileopen, bufio.ScanBytes)
+				fmt.Println(file_bytes)
+			} else {
+				// bug file_lines and file_words are always 0
+				file_bytes := CountItemsInFile(fileopen, bufio.ScanBytes)
+        // fmt.Println(file_bytes)
+				file_lines := CountItemsInFile(fileopen, bufio.ScanLines)
+        // fmt.Println(file_lines)
+				file_words := CountItemsInFile(fileopen, bufio.ScanWords)
+        // fmt.Println(file_words)
+				fmt.Println(file_lines, file_words, file_bytes)
+			}
+		}
+
 		for _, file := range args {
+			f, err := os.Open(file)
+			Check(err)
+			defer f.Close()
+			fileopen := bufio.NewReader(f)
+			// filebuf := bufio.NewReader(f)
+      // fileopen := bufio.NewScanner(filebuf)
+
 			if b {
-				file_bytes := BytesInFile(file)
+				file_bytes := CountItemsInFile(fileopen, bufio.ScanBytes)
 				fmt.Println(file_bytes, file)
 			} else if l {
-				file_lines := LinesInFile(file)
+				file_lines := CountItemsInFile(fileopen, bufio.ScanLines)
 				fmt.Println(file_lines, file)
 			} else if w {
-				file_words := WordsInFile(file)
+				file_words := CountItemsInFile(fileopen, bufio.ScanWords)
 				fmt.Println(file_words, file)
 			} else if c {
-				file_chars := CharsInFile(file)
+				file_chars := CountItemsInFile(fileopen, bufio.ScanRunes)
 				fmt.Println(file_chars, file)
 			} else {
-				file_bytes := BytesInFile(file)
-				file_lines := LinesInFile(file)
-				file_words := WordsInFile(file)
+				file_bytes := CountItemsInFile(fileopen, bufio.ScanBytes)
+				file_lines := CountItemsInFile(fileopen, bufio.ScanLines)
+				file_words := CountItemsInFile(fileopen, bufio.ScanWords)
 				fmt.Println(file_lines, file_words, file_bytes, file)
 			}
 		}

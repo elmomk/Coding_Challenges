@@ -1,43 +1,38 @@
 package main_test
 
 import (
+	"bufio"
+	"strings"
 	"testing"
 
 	"github.com/elmomk/Coding_Challenges/1_wc/go/ggwc/cmd"
 )
 
-func TestLine(t *testing.T) {
-	get := cmd.LinesInFile("./test.txt")
-	t.Logf("Lines In file: %d", get)
-	want := 7145 // wc -l test.txt
-	if get != want {
-		t.Fatalf("got %d instead of %d", get, want)
-	}
-}
+func TestCountItemsInFile(t *testing.T) {
+	// Create a test case with a mocked file content
+	fileContent := "line1\nline2\nline3\n"
+	file := strings.NewReader(fileContent)
+  table := []struct { // Create a table of test cases
+    name string
+    splitType bufio.SplitFunc
+    expectedCount int
+  }{
+    {"Lines", bufio.ScanLines, 3},
+    {"Words", bufio.ScanWords, 3},
+    {"Bytes", bufio.ScanBytes, 18},
+  }
 
-func TestBytes(t *testing.T) {
-	get := cmd.BytesInFile("./test.txt")
-	t.Logf("Bytes In file: %d", get)
-	var want int64 = 342190 // wc -c test.txt
-	if get != want {
-		t.Fatalf("got %d instead of %d", get, want)
-	}
-}
+  
+  fileReader := bufio.NewReader(file)
+	// Call the function being tested
+  for _, tt := range table {
+    t.Logf("Testing %s", tt.name)
 
-func TestWords(t *testing.T) {
-	get := cmd.WordsInFile("./test.txt")
-	t.Logf("Words in file: %d", get)
-	want := 58164 // wc test.txt --words
-	if get != want {
-		t.Fatalf("got %d instead of %d", get, want)
-	}
-}
+	count := cmd.CountItemsInFile(fileReader, tt.splitType)
 
-func TestChars(t *testing.T) {
-	get := cmd.CharsInFile("./test.txt")
-	t.Logf("Chars in file: %d", get)
-	want := 339292 // wc test.txt -m
-	if get != want {
-		t.Fatalf("got %d instead of %d", get, want)
+	// Check if the count matches the expected value
+	if count != tt.expectedCount {
+		t.Errorf("CountItemsInFile returned %d, expected %d", count, tt.expectedCount)
 	}
+  }
 }
