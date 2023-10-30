@@ -97,9 +97,11 @@ var rootCmd = &cobra.Command{
 				file_chars := CountItemsInFile(fileopen, bufio.ScanRunes)
 				fmt.Println(file_chars, file)
 			} else {
-				file_bytes := CountItemsInFile(fileopen, bufio.ScanBytes)
+        fmt.Println(fileopen.ReadString('\n'))
 				file_lines := CountItemsInFile(fileopen, bufio.ScanLines)
+        fmt.Println(fileopen.ReadString('\n'))
 				file_words := CountItemsInFile(fileopen, bufio.ScanWords)
+				file_bytes := CountItemsInFile(fileopen, bufio.ScanBytes)
 				fmt.Println(file_lines, file_words, file_bytes, file)
 			}
 		}
